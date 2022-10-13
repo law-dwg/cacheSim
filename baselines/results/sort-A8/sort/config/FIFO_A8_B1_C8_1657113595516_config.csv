@@ -1,0 +1,2 @@
+blockSize_bytes,cacheSize_bytes,ramSize_bytes,placementPolicy,replacementPolicy,program,hits,misses,hitRatio,filename
+8,64,104,8-way_set_associative,FIFO,sort,174,60,0.743590,results/2022-07-06T1519/sort/data/FIFO_A8_B1_C8_1657113595516.csv

@@ -1,0 +1,2 @@
+blockSize_bytes,cacheSize_bytes,ramSize_bytes,placementPolicy,replacementPolicy,program,hits,misses,hitRatio,filename
+8,256,384,2-way_set_associative,LRU,matMul,306,54,0.850000,results/2022-07-06T1610/matMul/data/LRU_A2_B1_C32_1657116648895.csv

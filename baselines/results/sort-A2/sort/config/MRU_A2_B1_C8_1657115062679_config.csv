@@ -1,0 +1,2 @@
+blockSize_bytes,cacheSize_bytes,ramSize_bytes,placementPolicy,replacementPolicy,program,hits,misses,hitRatio,filename
+8,64,168,2-way_set_associative,MRU,sort,432,244,0.639053,results/2022-07-06T1544/sort/data/MRU_A2_B1_C8_1657115062679.csv

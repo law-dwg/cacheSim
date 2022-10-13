@@ -1,0 +1,2 @@
+blockSize_bytes,cacheSize_bytes,ramSize_bytes,placementPolicy,replacementPolicy,program,hits,misses,hitRatio,filename
+8,64,160,8-way_set_associative,PLRU,sort,440,166,0.726073,results/2022-07-06T1519/sort/data/PLRU_A8_B1_C8_1657113597097.csv

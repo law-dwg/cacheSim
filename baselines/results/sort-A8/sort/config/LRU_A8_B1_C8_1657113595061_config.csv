@@ -1,0 +1,2 @@
+blockSize_bytes,cacheSize_bytes,ramSize_bytes,placementPolicy,replacementPolicy,program,hits,misses,hitRatio,filename
+8,64,176,8-way_set_associative,LRU,sort,404,224,0.643312,results/2022-07-06T1519/sort/data/LRU_A8_B1_C8_1657113595061.csv

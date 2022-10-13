@@ -1,0 +1,2 @@
+blockSize_bytes,cacheSize_bytes,ramSize_bytes,placementPolicy,replacementPolicy,program,hits,misses,hitRatio,filename
+8,256,1400,4-way_set_associative,SLRU,matMul,1404,1636,0.461842,results/2022-10-06T1943/matMul/data/SLRU_A4_B1_C32_1665078185884.csv
