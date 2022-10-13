@@ -1,2 +1,0 @@
-blockSize_bytes,cacheSize_bytes,ramSize_bytes,placementPolicy,replacementPolicy,program,hits,misses,hitRatio,filename
-8,64,144,8-way_set_associative,LFU,sort,223,245,0.476496,results/2022-07-06T1519/sort/data/LFU_A8_B1_C8_1657113599255.csv

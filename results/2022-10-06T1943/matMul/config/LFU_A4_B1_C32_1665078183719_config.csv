@@ -1,2 +1,0 @@
-blockSize_bytes,cacheSize_bytes,ramSize_bytes,placementPolicy,replacementPolicy,program,hits,misses,hitRatio,filename
-8,256,992,4-way_set_associative,LFU,matMul,685,1219,0.359769,results/2022-10-06T1943/matMul/data/LFU_A4_B1_C32_1665078183719.csv

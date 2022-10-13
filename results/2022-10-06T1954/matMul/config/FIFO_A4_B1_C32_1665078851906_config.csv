@@ -1,2 +1,0 @@
-blockSize_bytes,cacheSize_bytes,ramSize_bytes,placementPolicy,replacementPolicy,program,hits,misses,hitRatio,filename
-8,256,888,4-way_set_associative,FIFO,matMul,910,1130,0.446078,results/2022-10-06T1954/matMul/data/FIFO_A4_B1_C32_1665078851906.csv

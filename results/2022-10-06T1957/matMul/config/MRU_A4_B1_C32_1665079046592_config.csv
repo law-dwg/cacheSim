@@ -1,2 +1,0 @@
-blockSize_bytes,cacheSize_bytes,ramSize_bytes,placementPolicy,replacementPolicy,program,hits,misses,hitRatio,filename
-8,256,528,4-way_set_associative,MRU,matMul,745,343,0.684743,results/2022-10-06T1957/matMul/data/MRU_A4_B1_C32_1665079046592.csv
