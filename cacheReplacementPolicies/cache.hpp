@@ -194,8 +194,7 @@ class Cache {
   Cache(CacheConfig<R, T> &c, bool sO = true) : config(c) {
     int initHashMapSize =
         (config.ramSize / config.cacheSize_sets) /
-        config
-            .blockSize;  // initial size of hashmap, can grow (through allocate)
+        config.blockSize;  // initial size of hashmap, increase w/ alloc
     for (int i = 0; i < config.cacheSize_sets; ++i) {  // create vector of sets
       set.emplace_back(std::make_unique<R>(config.setSize_blocks,
                                            &config.blockSize, initHashMapSize));
