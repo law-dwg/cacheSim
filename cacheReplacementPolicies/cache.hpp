@@ -80,8 +80,8 @@ struct CacheConfig {
         placementPolicy(pP) {
     if (cacheSize < blockSize)
       throw std::runtime_error(
-          "cacheSize cannot be less than blockSize out of bounds");  // error
-                                                                     // checking
+          "cacheSize cannot be less than blockSize - out of bounds");  // error
+                                                                       // checking
     if (cacheSize_bytes % blockSize_bytes != 0)
       throw std::runtime_error(
           "cacheSize must be divisble by blocksize");  // error checking
