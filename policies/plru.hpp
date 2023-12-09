@@ -1,4 +1,6 @@
 #pragma once
+#include <stdio.h>
+#include <random>
 #include "../cache/set.hpp"
 
 template <typename T>

@@ -1,16 +1,12 @@
 #pragma once
 #include "../utils/utils.hpp"
-// Standard libraries
-#include <stdio.h>
 
-// #include <filesystem>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <random>
-#include <sstream>
 #include <string>
 #include <vector>
+#include <array>
 
 // Replacement policies
 #include "../policies/fifo.hpp"
@@ -20,107 +16,103 @@
 #include "../policies/plru.hpp"
 #include "../policies/slru.hpp"
 
+// Use constexpr for constants
+constexpr size_t kMaxPlacementPolicy = 8;
+
 template <typename R, typename T>
 struct CacheConfig
 {
-  // data members
-  unsigned placementPolicy;
   R *replacementPolicy = nullptr; // we only care about the type
-  T *dataType = nullptr;          // we only care about the type
+  std::array<std::string, kMaxPlacementPolicy + 1> kPPStrings = {
+      // pP = 0 anything can go anywhere in cache - one large set
+      "fully_associative",
+      // pP = 1 each block in main memory can go to only one block in cache
+      "1-way_set_associative_direct_mapping",
+      // pP = 2 each block in main memory can go to 2 blocks in cache (1 set has two blocks)
+      "2-way_set_associative",
+      "3-way_set_associative",
+      "4-way_set_associative",
+      "5-way_set_associative",
+      "6-way_set_associative",
+      "7-way_set_associative",
+      "8-way_set_associative"};
+  std::vector<std::string> rPstrings = {
+      "FIFO", "LFU", "LRU", "MRU", "SLRU", "PLRU"};
+  std::vector<std::string> programs = {"matMul", "sort", "LSQR"};
+  std::string determineReplacementPolicyStr(R *replacementPolicy) const
+  {
+    std::string out;
+    if (typeid(R) == typeid(FIFO<T>))
+      out = "FIFO";
+    else if (typeid(R) == typeid(LFU<T>))
+      out = "LFU";
+    else if (typeid(R) == typeid(LRU<T>))
+      out = "LRU";
+    else if (typeid(R) == typeid(MRU<T>))
+      out = "MRU";
+    else if (typeid(R) == typeid(SLRU<T>))
+      out = "SLRU";
+    else if (typeid(R) == typeid(PLRU<T>))
+      out = "PLRU";
+    else
+      throw std::runtime_error("unknown replacement policy");
+    return out;
+  };
+  int ramSize_bytes = 0;
+  int ramSize = 0; // # of sizeOf(T) in RAM
+
+  bool suppressOut = true;
+  unsigned hitCount = 0;
+  unsigned missCount = 0;
+
   unsigned program;
-  // strings
-  std::string placementPolicyStr;
-  std::string replacementPolicyStr;
-  std::string dataTypeStr;
   std::string programStr;
   std::string fileout;
   std::string fileoutData;
-  //
-  bool suppressOut = true;
-  // units in Bytes
-  int cacheSize_bytes;
-  int blockSize_bytes;
-  int ramSize_bytes = 0;
 
-  // units of blocks
-  int setSize_blocks;   // # of blocks in set, determined at runtime/error
-                        // handling, cannot set to const
+  int blockSize_bytes;
+  int blockSize; // # of sizeOf(T) in a block
+  int cacheSize_bytes;
+  int cacheSize;        // # of sizeOf(T) in cache
   int cacheSize_blocks; // total # of blocks in cache
-  // units of sets
-  int cacheSize_sets; // # of sets in cache
-  // units of sizeOf(T)
-  int blockSize;   // # of sizeOf(T) in a block
-  int cacheSize;   // # of sizeOf(T) in cache
-  int ramSize = 0; // # of sizeOf(T) in RAM
-  // results
-  unsigned hitCount = 0;
-  unsigned missCount = 0;
-  std::vector<std::string> pPStrings = {
-      "fully_associative",                    // pP = 0 anything can go anywhere in cache - one
-                                              // large set
-      "1-way_set_associative_direct_mapping", // pP = 1 each block in main
-                                              // memory can go to only one
-                                              // block in cache
-      "2-way_set_associative",                // pP = 2 each block in main memory can go to 2
-                                              // blocks in cache (1 set has two blocks)
-      "3-way_set_associative",                // pP = 3 each block in main memory can go to 2
-                                              // blocks in cache (1 set has three blocks)
-      "4-way_set_associative",                // pP = 4 each block in main memory can go to 4
-                                              // blocks in cache (1 set has four blocks)
-      "5-way_set_associative", "6-way_set_associative", "7-way_set_associative",
-      "8-way_set_associative"};
-  std::vector<std::string> rPstrings = {"FIFO", "LFU", "LRU",
-                                        "MRU", "SLRU", "PLRU"};
-  std::vector<std::string> programs = {"matMul", "sort", "LSQR"};
-  /* constructor */
+  int setSize_blocks;   // # of blocks in set, determined at runtime
+  int cacheSize_sets;   // # of sets in cache
+  unsigned placementPolicy;
+  std::string placementPolicyStr;
+  std::string replacementPolicyStr;
   CacheConfig(int bS_b, int cS_b, int pP)
+      // initializer list is executed in order of declaration not order of initialization
       : blockSize_bytes(bS_b),
-        cacheSize_bytes(cS_b),
         blockSize(bS_b / sizeof(T)),
+        cacheSize_bytes(cS_b),
         cacheSize(cS_b / sizeof(T)),
-        placementPolicy(pP)
+        cacheSize_blocks(cacheSize / blockSize),                  // cacheSize in blocks
+        setSize_blocks((pP == 0) ? (cacheSize / blockSize) : pP), // setSize in blocks
+        cacheSize_sets(cacheSize_blocks / setSize_blocks),        // cacheSize in sets
+        placementPolicy(pP),
+        placementPolicyStr(kPPStrings.at(placementPolicy)),
+        replacementPolicyStr(determineReplacementPolicyStr(replacementPolicy))
+  {
+    validate();
+    print();
+  };
+
+  void validate() const
   {
     if (cacheSize < blockSize)
-      throw std::runtime_error(
-          "cacheSize cannot be less than blockSize out of bounds"); // error
-                                                                    // checking
+      throw std::runtime_error("Cache size cannot be less than block size.");
     if (cacheSize_bytes % blockSize_bytes != 0)
-      throw std::runtime_error(
-          "cacheSize must be divisble by blocksize"); // error checking
+      throw std::runtime_error("Cache size must be divisible by block size.");
     if (cacheSize % 2 != 0)
-      throw std::runtime_error(
-          "cacheSize must be divisble by 2"); // error checking
+      throw std::runtime_error("Cache size must be divisible by 2.");
     if (blockSize_bytes % 2 != 0)
-      throw std::runtime_error(
-          "blocksize must be divisble by 2"); // error checking
-    if (placementPolicy != 0)
-    {
-      if (cacheSize % placementPolicy != 0)
-        throw std::runtime_error(
-            "cacheSize must be divisble by set associativity"); // error
-                                                                // checking
-    }
-    if (pP > 8)
-      throw std::runtime_error(
-          "placementPolicy > 8 is currently not supported "); // error checking
-    replacementPolicyStr = determineRp(replacementPolicy);
-    placementPolicyStr = pPStrings[placementPolicy];
-    setSize_blocks =
-        (pP == 0) ? (cacheSize / blockSize) : pP;       // setSize in blocks
-    cacheSize_blocks = (cacheSize / blockSize);         // cacheSize in blocks
-    cacheSize_sets = cacheSize_blocks / setSize_blocks; // cacheSize in sets
-    printf(
-        "cacheSize_bytes = %d, "
-        "blockSize_bytes = %d, "
-        "setSize_blocks = %d, "
-        "cacheSize_blocks = %d, "
-        "cacheSize_sets = %d, "
-        "blockSize = %d, "
-        "cacheSize = %d\n",
-        cacheSize_bytes, blockSize_bytes, setSize_blocks, cacheSize_blocks,
-        cacheSize_sets, blockSize, cacheSize);
-  };
-  // function members
+      throw std::runtime_error("Block size must be divisible by 2.");
+    if (placementPolicy != 0 && cacheSize % placementPolicy != 0)
+      throw std::runtime_error("Cache size must be divisible by set associativity.");
+    if (placementPolicy > kMaxPlacementPolicy)
+      throw std::runtime_error("Placement policy out of supported range.");
+  }
+
   void print()
   {
     std::cout << "***CACHE-CONFIG***" << std::endl;
@@ -134,6 +126,7 @@ struct CacheConfig
               << " blocks total)" << std::endl;
     std::cout << std::endl;
   };
+
   void writeOut(int g)
   {
     std::string header =
@@ -173,39 +166,6 @@ struct CacheConfig
     {
       std::cout << "Unable to open " << GLOBAL_CONFIG << std::endl;
     }
-  };
-  std::string determineRp(R *replacementPolicy)
-  {
-    std::string out;
-    if (typeid(R) == typeid(FIFO<T>))
-    {
-      out = "FIFO";
-    }
-    else if (typeid(R) == typeid(LFU<T>))
-    {
-      out = "LFU";
-    }
-    else if (typeid(R) == typeid(LRU<T>))
-    {
-      out = "LRU";
-    }
-    else if (typeid(R) == typeid(MRU<T>))
-    {
-      out = "MRU";
-    }
-    else if (typeid(R) == typeid(SLRU<T>))
-    {
-      out = "SLRU";
-    }
-    else if (typeid(R) == typeid(PLRU<T>))
-    {
-      out = "PLRU";
-    }
-    else
-    {
-      throw std::runtime_error("unknown replacement policy");
-    }
-    return out;
   };
 };
 

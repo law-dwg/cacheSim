@@ -1,11 +1,10 @@
 #include "utils.hpp"
-// #include <filesystem>
+#include <filesystem>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <chrono>
 #include <ctime>
-#include <experimental/filesystem>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -47,15 +46,15 @@ void initGlobalConfig()
 {
   std::string dir_results = "results/";
   std::string directoryout = dir_results + NOW;
-  std::experimental::filesystem::path path_results{dir_results};
-  std::experimental::filesystem::path out{directoryout};
-  if (!std::experimental::filesystem::exists(path_results))
+  std::filesystem::path path_results{dir_results};
+  std::filesystem::path out{directoryout};
+  if (!std::filesystem::exists(path_results))
   {
-    std::experimental::filesystem::create_directory(dir_results);
+    std::filesystem::create_directory(dir_results);
   };
-  if (!std::experimental::filesystem::exists(out))
+  if (!std::filesystem::exists(out))
   {
-    std::experimental::filesystem::create_directory(directoryout);
+    std::filesystem::create_directory(directoryout);
   };
   std::ofstream report(GLOBAL_CONFIG, std::ios_base::app);
   std::string input =
