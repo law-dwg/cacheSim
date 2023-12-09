@@ -51,6 +51,3 @@ clean:
 
 run: $(BUILD_DIR)/$(TARGET)
 	$(BUILD_DIR)/$(TARGET)
-
-format:
-	clang-format -i --verbose --style={'BasedOnStyle: Google'} $(SRC_MAIN) $(SRC_UTILS)/*.* $(SRC_PROGRAMS)/*.* $(SRC_CACHE_REPLACEMENT_POLICIES)/*.*

@@ -9,14 +9,17 @@
 #include "utils.hpp"
 
 template <typename X>
-struct LoggerWrapper {
-  X &cache;       // one cache
-  Logger<X> log;  // one log per cache
-  LoggerWrapper(X &c) : cache(c), log(c) {
+struct LoggerWrapper
+{
+  X &cache;      // one cache
+  Logger<X> log; // one log per cache
+  LoggerWrapper(X &c) : cache(c), log(c)
+  {
     cache.config.fileoutData = log.fileout_data;
     cache.config.fileout = log.fileout_config;
   };
-  std::string operator()(std::string s) {
+  std::string operator()(std::string s)
+  {
     // std::chrono::milliseconds ms = std::chrono::duration_cast<
     // std::chrono::milliseconds >(
     // std::chrono::system_clock::now().time_since_epoch());
@@ -28,21 +31,26 @@ struct LoggerWrapper {
 };
 
 template <typename C, typename T, typename V>
-struct DataWrapper {
+struct DataWrapper
+{
   int offset;
-  V &dataset;             // reference to dataset
-  C &cache;               // reference to cache in cachewrapper
-  LoggerWrapper<C> &log;  // reference to logger in cachewrapper
+  V &dataset;            // reference to dataset
+  C &cache;              // reference to cache in cachewrapper
+  LoggerWrapper<C> &log; // reference to logger in cachewrapper
   DataWrapper(int o, V &ds, C &c, LoggerWrapper<C> &l)
       : offset(o), dataset(ds), log(l), cache(c){};
-  T operator[](int lIdx) {
+  T operator[](int lIdx)
+  {
     unsigned gIdx = offset + lIdx;
     bool temp = cache.find(gIdx, dataset[lIdx]);
     std::string out = (temp) ? "1" : "0";
     // log(out);
-    if (temp) {
+    if (temp)
+    {
       ++cache.config.hitCount;
-    } else {
+    }
+    else
+    {
       ++cache.config.missCount;
     }
     log(out);
@@ -51,12 +59,14 @@ struct DataWrapper {
 };
 
 template <typename R, typename T, typename V>
-struct CacheWrapper {
+struct CacheWrapper
+{
   typedef Cache<R, T> CacheType;
-  CacheType cache;               // one cache
-  LoggerWrapper<CacheType> log;  // one log per cache
+  CacheType cache;              // one cache
+  LoggerWrapper<CacheType> log; // one log per cache
   CacheWrapper(CacheConfig<R, T> &c) : cache(c), log(cache){};
-  DataWrapper<CacheType, T, V> allocate(unsigned a, V &v) {
+  DataWrapper<CacheType, T, V> allocate(unsigned a, V &v)
+  {
     unsigned tempBaseLine = cache.config.ramSize;
     DataWrapper<CacheType, T, V> data(cache.config.ramSize, v, cache, log);
     cache.allocate(a);

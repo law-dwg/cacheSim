@@ -7,8 +7,9 @@
 // you should probably rebuild your LRU containers for the operations used
 // within the FreqMap
 template <typename T>
-class basicLRU {
- public:
+class basicLRU
+{
+public:
   // data members
   Block<T> *mru = nullptr;
   Block<T> *lru = nullptr;
@@ -20,7 +21,8 @@ class basicLRU {
   // basicLRU(){};
 
   // function members
-  void reset() {
+  void reset()
+  {
     mru = nullptr;
     lru = nullptr;
     moreFreq = nullptr;
@@ -28,46 +30,63 @@ class basicLRU {
     size = 0;
   };
 
-  void set(Block<T> *blkPtr) {
-    if (size == 0) {
+  void set(Block<T> *blkPtr)
+  {
+    if (size == 0)
+    {
       mru = blkPtr;
       lru = blkPtr;
       blkPtr->prev = nullptr;
       blkPtr->next = nullptr;
-    } else if (size > 0) {
-      mru->prev = blkPtr;      // blkPtr <- oldMRU ...
-      blkPtr->next = mru;      // blkPtr -> oldMRU ...
-      blkPtr->prev = nullptr;  // null <- blkPtr -> <- oldMRU ...
-      mru = blkPtr;            // null <- newMRU/blkPtr -> <- oldMRU ...
-    } else {
+    }
+    else if (size > 0)
+    {
+      mru->prev = blkPtr;     // blkPtr <- oldMRU ...
+      blkPtr->next = mru;     // blkPtr -> oldMRU ...
+      blkPtr->prev = nullptr; // null <- blkPtr -> <- oldMRU ...
+      mru = blkPtr;           // null <- newMRU/blkPtr -> <- oldMRU ...
+    }
+    else
+    {
       throw std::runtime_error("theres a problem with your basicLRU insert");
     }
     size++;
   };
 
-  void remove(Block<T> *blkPtr) {
-    if (size == 1) {  // only one element left
+  void remove(Block<T> *blkPtr)
+  {
+    if (size == 1)
+    { // only one element left
       lru = nullptr;
       mru = nullptr;
-    } else if (size > 1) {
-      if (blkPtr == lru) {          // if lru
-        lru->prev->next = nullptr;  // ... newLRU -> nullptr |  newLRU <-
-                                    // oldLRU/blkPtr -> nullptr
-        lru = lru->prev;            // new lru
-        blkPtr->prev = nullptr;     // ... newLRU -> nullptr |  nullptr <-
-                                    // oldLRU/blkPtr -> nullptr
-      } else if (blkPtr == mru) {   // if mru
-        mru->next->prev = nullptr;  // nullptr <- oldMRU/blkPtr -> newMRU |
-                                    // nullptr <- newMRU ...
-        mru = mru->next;            // new mru
+    }
+    else if (size > 1)
+    {
+      if (blkPtr == lru)
+      {                            // if lru
+        lru->prev->next = nullptr; // ... newLRU -> nullptr |  newLRU <-
+                                   // oldLRU/blkPtr -> nullptr
+        lru = lru->prev;           // new lru
+        blkPtr->prev = nullptr;    // ... newLRU -> nullptr |  nullptr <-
+                                   // oldLRU/blkPtr -> nullptr
+      }
+      else if (blkPtr == mru)
+      {                            // if mru
+        mru->next->prev = nullptr; // nullptr <- oldMRU/blkPtr -> newMRU |
+                                   // nullptr <- newMRU ...
+        mru = mru->next;           // new mru
         blkPtr->next =
-            nullptr;  // nullptr <- oldMRU/blkPtr -> nullptr | nullptr
-                      // <- newMRU ...
-      } else {        // if in middle (swap)
+            nullptr; // nullptr <- oldMRU/blkPtr -> nullptr | nullptr
+                     // <- newMRU ...
+      }
+      else
+      { // if in middle (swap)
         blkPtr->prev->next = blkPtr->next;
         blkPtr->next->prev = blkPtr->prev;
       }
-    } else {
+    }
+    else
+    {
       throw std::runtime_error("theres a problem with your basicLRU remove");
     }
     // disconnect from this LRU
@@ -78,8 +97,9 @@ class basicLRU {
 };
 
 template <typename T>
-class LFU : public Set<T> {
- public:
+class LFU : public Set<T>
+{
+public:
   /** LFU
    * Map is stores the frequencies and the corresponding blocks that have those
    * frequencies with their own replacement algorithmn (e.g. FIFO or LRU)
@@ -87,40 +107,49 @@ class LFU : public Set<T> {
 
   // data members
   std::map<unsigned, std::shared_ptr<basicLRU<T>>>
-      freqMap;  // max size == setSize
+      freqMap; // max size == setSize
   std::shared_ptr<basicLRU<T>> mfu = nullptr;
   std::shared_ptr<basicLRU<T>> lfu = nullptr;
 
   /** constructor **/
-  LFU(int sS, int *bS, int hMS) : Set<T>(sS, bS, hMS) {
+  LFU(int sS, int *bS, int hMS) : Set<T>(sS, bS, hMS)
+  {
     if (sS == 1)
       throw std::runtime_error(
           "LFU is not supported for direct mapping "
           "(doesnt make sense to implement)\n");
     std::shared_ptr<basicLRU<T>> blruPtr(new basicLRU<T>);
-    freqMap.insert({0, blruPtr});  // starting out
+    freqMap.insert({0, blruPtr}); // starting out
     lfu = blruPtr;
     mfu = blruPtr;
   };
 
   // function members
   std::string name() { return "LFU"; };
-  bool isKeyInMap(unsigned key) {
-    if (freqMap.find(key) == freqMap.end()) {
+  bool isKeyInMap(unsigned key)
+  {
+    if (freqMap.find(key) == freqMap.end())
+    {
       return false;
-    } else {
+    }
+    else
+    {
       return true;
     }
   };
 
   void insertAfter(std::shared_ptr<basicLRU<T>> bLRU,
-                   std::shared_ptr<basicLRU<T>> newbLRU) {  // direction lfu
+                   std::shared_ptr<basicLRU<T>> newbLRU)
+  { // direction lfu
     // mfu  <-head->.....<-tail-> lfu
     newbLRU->moreFreq = bLRU;
-    if (bLRU->lessFreq == nullptr) {  // LFU
+    if (bLRU->lessFreq == nullptr)
+    { // LFU
       newbLRU->lessFreq = nullptr;
       lfu = newbLRU;
-    } else {
+    }
+    else
+    {
       newbLRU->lessFreq = bLRU->lessFreq;
       bLRU->lessFreq->moreFreq = newbLRU;
     }
@@ -128,21 +157,26 @@ class LFU : public Set<T> {
   };
 
   void insertBefore(std::shared_ptr<basicLRU<T>> bLRU,
-                    std::shared_ptr<basicLRU<T>> newbLRU) {  // direction mfu
+                    std::shared_ptr<basicLRU<T>> newbLRU)
+  { // direction mfu
     // mfu  <-head->.....<-tail-> lfu
     // (before)<-moreFreq.....lessFreq->(after)
     newbLRU->lessFreq = bLRU;
-    if (bLRU->moreFreq == nullptr) {  // MFU
+    if (bLRU->moreFreq == nullptr)
+    { // MFU
       newbLRU->moreFreq = nullptr;
       mfu = newbLRU;
-    } else {
+    }
+    else
+    {
       newbLRU->moreFreq = bLRU->moreFreq;
       bLRU->moreFreq->lessFreq = newbLRU;
     }
     bLRU->moreFreq = newbLRU;
   };
 
-  void insertMFU(std::shared_ptr<basicLRU<T>> newbLRU) {
+  void insertMFU(std::shared_ptr<basicLRU<T>> newbLRU)
+  {
     // insertBeginning
     //// if we didnt initialize our list we could use commented out code
     // if (mfu == nullptr){
@@ -155,7 +189,8 @@ class LFU : public Set<T> {
     // }
   };
 
-  void insertLFU(std::shared_ptr<basicLRU<T>> newbLRU) {  // insertEnd
+  void insertLFU(std::shared_ptr<basicLRU<T>> newbLRU)
+  { // insertEnd
     // if we didnt initialize our list we could use commented out code
     // if(lfu == nullptr){
     //   insertMFU(newbLRU);
@@ -164,81 +199,98 @@ class LFU : public Set<T> {
     // }
   };
 
-  void remove(std::shared_ptr<basicLRU<T>> bLRU) {
-    if (bLRU->moreFreq == nullptr) {  // if node is MFU
+  void remove(std::shared_ptr<basicLRU<T>> bLRU)
+  {
+    if (bLRU->moreFreq == nullptr)
+    { // if node is MFU
       mfu = bLRU->lessFreq;
-    } else {
+    }
+    else
+    {
       bLRU->moreFreq->lessFreq = bLRU->lessFreq;
     }
 
-    if (bLRU->lessFreq == nullptr) {  // if node is LFU
+    if (bLRU->lessFreq == nullptr)
+    { // if node is LFU
       lfu = bLRU->moreFreq;
-    } else {
+    }
+    else
+    {
       bLRU->lessFreq->moreFreq = bLRU->moreFreq;
     }
     // node can be reset
     bLRU->reset();
   }
 
-  void missLFU(int offset, int tag, T &ramData, Block<T> *blkPtr) {
+  void missLFU(int offset, int tag, T &ramData, Block<T> *blkPtr)
+  {
     // 0 freq group is never removed!
     unsigned oldFreq;
     // map scope
-    if (this->dll.full) {      // recycling an existing cache-block
-      blkPtr = lfu->lru;       // still contains old data
-      oldFreq = blkPtr->freq;  // keep useful data
-      lfu->remove(blkPtr);     // block floating unassigned
-      blkPtr->reset();  // block scope - clear old data, updates hashmap as well
-                        // (you should change this)
-      if (freqMap[oldFreq]->size == 0) {
-        remove(freqMap[oldFreq]);  // remove old if necessary
-        if (oldFreq != 0) {        // we going to let 0 group float
+    if (this->dll.full)
+    {                         // recycling an existing cache-block
+      blkPtr = lfu->lru;      // still contains old data
+      oldFreq = blkPtr->freq; // keep useful data
+      lfu->remove(blkPtr);    // block floating unassigned
+      blkPtr->reset();        // block scope - clear old data, updates hashmap as well
+                              // (you should change this)
+      if (freqMap[oldFreq]->size == 0)
+      {
+        remove(freqMap[oldFreq]); // remove old if necessary
+        if (oldFreq != 0)
+        { // we going to let 0 group float
           // delete freqMap[oldFreq];                                  //
           // dangling ptr
-          freqMap[oldFreq] = nullptr;  // block dangling ptr
+          freqMap[oldFreq] = nullptr; // block dangling ptr
           freqMap.erase(oldFreq);
         }
       }
-    } else {  // pulling a fresh unused cache-block
-      blkPtr = &this->dll.blocks[this->dll.counter];  // new node
-      this->increment();  // next available node index
+    }
+    else
+    {                                                // pulling a fresh unused cache-block
+      blkPtr = &this->dll.blocks[this->dll.counter]; // new node
+      this->increment();                             // next available node index
     }
     // block scope
     this->updateNewBlock(offset, tag, ramData,
-                         blkPtr);  // block updated with new info
+                         blkPtr); // block updated with new info
     // map scope
     if (lfu != freqMap[0])
-      insertAfter(lfu, freqMap[0]);  // new lfu is set if necessary
+      insertAfter(lfu, freqMap[0]); // new lfu is set if necessary
     freqMap[0]->set(blkPtr);
   };
 
-  void hitLFU(int offset, int tag, T &ramData, Block<T> *blkPtr) {
+  void hitLFU(int offset, int tag, T &ramData, Block<T> *blkPtr)
+  {
     // block scope
     unsigned oldFreq = blkPtr->freq;
     blkPtr->freq++;
     unsigned newFreq = blkPtr->freq;
 
     // block/map scope
-    freqMap[oldFreq]->remove(blkPtr);  // remove block from old map entry
+    freqMap[oldFreq]->remove(blkPtr); // remove block from old map entry
 
     // we will now move block from oldFreq location to newFreq location
 
     // map scope
-    if (!isKeyInMap(newFreq)) {  // if new freqGroup doesnt exist
-      std::shared_ptr<basicLRU<T>> blru(new basicLRU<T>);  // create it
+    if (!isKeyInMap(newFreq))
+    {                                                     // if new freqGroup doesnt exist
+      std::shared_ptr<basicLRU<T>> blru(new basicLRU<T>); // create it
       freqMap.insert(
-          {newFreq, blru});  // add to map freqMap[newFreq] now exists
+          {newFreq, blru}); // add to map freqMap[newFreq] now exists
       insertBefore(
           freqMap[oldFreq],
-          freqMap[newFreq]);  // insert freqMap[newFreq] before existing
+          freqMap[newFreq]); // insert freqMap[newFreq] before existing
     }
     // our new node is already in the list, now check if the old one should be
     // removed we can remove the 0 group, but we wont "hard" delete it.
-    if (freqMap[oldFreq]->size == 0) {  // if the old one is now empty
-      remove(freqMap[oldFreq]);         // floating in space
-      if (oldFreq != 0) {               // we going to let 0 group float
+    if (freqMap[oldFreq]->size == 0)
+    {                           // if the old one is now empty
+      remove(freqMap[oldFreq]); // floating in space
+      if (oldFreq != 0)
+      { // we going to let 0 group float
         // delete freqMap[oldFreq];        // dangling ptr
-        freqMap[oldFreq] = nullptr;  // block dangling ptr
+        freqMap[oldFreq] = nullptr; // block dangling ptr
         freqMap.erase(oldFreq);
       }
     }
@@ -247,16 +299,21 @@ class LFU : public Set<T> {
     // end
   };
 
-  bool find(int offset, int tag, T &ramData) {  // processor requests memory
+  bool find(int offset, int tag, T &ramData)
+  { // processor requests memory
     bool hitFlag;
     Block<T> *blkPtr;
-    if (this->hit(this->hashMap[tag])) {  // CACHE HIT
-      hitFlag = true;                     // hit
-      if (this->dll.size != 1) {          // if not direct mapping
-        blkPtr = this->hashMap[tag];      // set the working pointer
+    if (this->hit(this->hashMap[tag]))
+    {                 // CACHE HIT
+      hitFlag = true; // hit
+      if (this->dll.size != 1)
+      {                              // if not direct mapping
+        blkPtr = this->hashMap[tag]; // set the working pointer
         hitLFU(offset, tag, ramData, blkPtr);
       }
-    } else {  // CACHE MISS
+    }
+    else
+    { // CACHE MISS
       hitFlag = false;
       missLFU(offset, tag, ramData, blkPtr);
     }

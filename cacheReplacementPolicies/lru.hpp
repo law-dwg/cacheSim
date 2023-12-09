@@ -2,14 +2,15 @@
 #include "set.hpp"
 
 template <typename T>
-class LRU : public Set<T> {
- public:
+class LRU : public Set<T>
+{
+public:
   /** LRU Cache Replacement Policy
    * LRU is the next block to be evicted (tail)
    * MRU is the last to be evicted (head) **/
 
   // data members
-  Block<T> lastEvicted;  // cacheline of last evicted
+  Block<T> lastEvicted; // cacheline of last evicted
 
   /** constructor **/
   LRU(int sS, int *bS, int hMS) : Set<T>(sS, bS, hMS){};
@@ -17,17 +18,22 @@ class LRU : public Set<T> {
   // function members
   std::string name() { return "LRU"; };
 
-  void hitLRU(int tag, Block<T> *blkPtr) {
+  void hitLRU(int tag, Block<T> *blkPtr)
+  {
     this->dll.remove(blkPtr);
     this->dll.insertBeginning(blkPtr);
   };
 
-  void missLRU(int offset, int tag, T &ramData, Block<T> *blkPtr) {
-    if (!this->dll.full) {                            // if cache not full
-      blkPtr = &this->dll.blocks[this->dll.counter];  // new node
-      this->increment();                              // update counter
-    } else {                                          // if cache full
-      blkPtr = this->dll.tail;                        // LRU
+  void missLRU(int offset, int tag, T &ramData, Block<T> *blkPtr)
+  {
+    if (!this->dll.full)
+    {                                                // if cache not full
+      blkPtr = &this->dll.blocks[this->dll.counter]; // new node
+      this->increment();                             // update counter
+    }
+    else
+    {                          // if cache full
+      blkPtr = this->dll.tail; // LRU
       lastEvicted = *blkPtr;
       this->dll.remove(blkPtr);
       blkPtr->reset();
@@ -36,7 +42,8 @@ class LRU : public Set<T> {
     this->dll.insertBeginning(blkPtr);
   };
 
-  bool find(int offset, int tag, T &ramData) {  // processor requests memory
+  bool find(int offset, int tag, T &ramData)
+  { // processor requests memory
     bool hitFlag;
     Block<T> *blkPtr;
     // std::cout<<"BEFORE"<<std::endl;
@@ -46,14 +53,18 @@ class LRU : public Set<T> {
     //     this->hashMap[i], this->hashMap[i]->next);
     //   }
     // };
-    if (this->hit(this->hashMap[tag])) {  // CACHE HIT
-      hitFlag = true;                     // hit
-      if (this->dll.size != 1) {  // if direct mapping, you dont need to move
-                                  // anything, it stays where it is
-        blkPtr = this->hashMap[tag];  // set the working pointer
+    if (this->hit(this->hashMap[tag]))
+    {                 // CACHE HIT
+      hitFlag = true; // hit
+      if (this->dll.size != 1)
+      {                              // if direct mapping, you dont need to move
+                                     // anything, it stays where it is
+        blkPtr = this->hashMap[tag]; // set the working pointer
         hitLRU(tag, blkPtr);
       }
-    } else {  // CACHE MISS
+    }
+    else
+    { // CACHE MISS
       hitFlag = false;
       missLRU(offset, tag, ramData, blkPtr);
     }

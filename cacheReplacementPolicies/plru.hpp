@@ -2,35 +2,41 @@
 #include "set.hpp"
 
 template <typename T>
-struct node {
+struct node
+{
   node *left;
   node *right;
   node *above;
-  bool pointsRight;  // 0(false) = left, 1(true) = right
+  bool pointsRight; // 0(false) = left, 1(true) = right
   node(node *l, node *r) : left(l), right(r), pointsRight(false){};
   void switchNodes() { pointsRight = !pointsRight; };
-  virtual Block<T> *descend() {  // returns ptr of replaced block
+  virtual Block<T> *descend()
+  { // returns ptr of replaced block
     Block<T> *blkPtr = (pointsRight) ? right->descend() : left->descend();
     switchNodes();
     return blkPtr;
   };
   void ascend(node *belowPtr,
-              node *selfPtr) {  // switches ptr if its being ptd to
+              node *selfPtr)
+  { // switches ptr if its being ptd to
     if ((pointsRight && belowPtr == right) ||
-        (!pointsRight && belowPtr == left)) {
+        (!pointsRight && belowPtr == left))
+    {
       switchNodes();
     };
-    if (above != nullptr) {
+    if (above != nullptr)
+    {
       above->ascend(selfPtr, above);
     };
   };
 };
 
 template <typename T>
-struct endNode : public node<T> {
- private:
-  using node<T>::ascend;  // blocked from using
- public:
+struct endNode : public node<T>
+{
+private:
+  using node<T>::ascend; // blocked from using
+public:
   Block<T> *leftEnd;
   Block<T> *rightEnd;
   // node* left = nullptr;
@@ -41,40 +47,48 @@ struct endNode : public node<T> {
         rightEnd(r){
             // printf("ptrleft = %p, ptrright= %p\n",l,r);
         };
-  Block<T> *descend() override {  // returns ptr to proper block
+  Block<T> *descend() override
+  { // returns ptr to proper block
     Block<T> *blkPtr = (this->pointsRight) ? rightEnd : leftEnd;
     this->switchNodes();
     return blkPtr;
   };
 
   void ascendEnd(Block<T> *belowPtr,
-                 node<T> *selfPtr) {  // switches ptr if its being ptd to
+                 node<T> *selfPtr)
+  { // switches ptr if its being ptd to
     if ((this->pointsRight && belowPtr == rightEnd) ||
-        (!this->pointsRight && belowPtr == leftEnd)) {
-      this->switchNodes();  // point away from block if hit
+        (!this->pointsRight && belowPtr == leftEnd))
+    {
+      this->switchNodes(); // point away from block if hit
     };
-    if (this->above != nullptr) {
+    if (this->above != nullptr)
+    {
       this->above->ascend(selfPtr, this->above);
     }
   };
 };
 
 template <typename T>
-class PLRU : public Set<T> {
- public:
+class PLRU : public Set<T>
+{
+public:
   // data members
-  Block<T> lastEvicted;                         // cacheline of last evicted
-  std::vector<std::shared_ptr<node<T>>> nodes;  // size = setSize-1
+  Block<T> lastEvicted;                        // cacheline of last evicted
+  std::vector<std::shared_ptr<node<T>>> nodes; // size = setSize-1
   /** constructor **/
-  PLRU(int sS, int *bS, int hMS) : Set<T>(sS, bS, hMS) {
-    int sq = std::log2(sS);  // ensure its a whole number
+  PLRU(int sS, int *bS, int hMS) : Set<T>(sS, bS, hMS)
+  {
+    int sq = std::log2(sS); // ensure its a whole number
     double cond = pow(2, sq);
     if (cond != sS)
       throw std::runtime_error("set size must be square e.g. 2,4,8,16,32,64\n");
-    int n_nodes = sS - 1;     // number of nodes in tree
-    int n_endNodes = sS / 2;  // number of end nodes in tree
-    if (sS > 2) {
-      for (int i = sS; i > 0; i -= 2) {  // end nodes
+    int n_nodes = sS - 1;    // number of nodes in tree
+    int n_endNodes = sS / 2; // number of end nodes in tree
+    if (sS > 2)
+    {
+      for (int i = sS; i > 0; i -= 2)
+      { // end nodes
         int idxleft = i - 2;
         int idxright = i - 1;
         Block<T> *ptrleft = &this->dll.blocks[idxleft];
@@ -84,9 +98,11 @@ class PLRU : public Set<T> {
         nodes.emplace(nodes.begin(),
                       std::make_shared<endNode<T>>(ptrleft, ptrright));
       };
-      if (sS > 4) {
+      if (sS > 4)
+      {
         int counter = 1;
-        for (int i = (n_nodes - n_endNodes - 1); i > 0; --i) {  // mid nodes
+        for (int i = (n_nodes - n_endNodes - 1); i > 0; --i)
+        { // mid nodes
           int gapRight = n_endNodes - counter;
           int gapLeft = gapRight - 1;
           node<T> *nodePtrLeft = nodes[gapLeft].get();
@@ -98,16 +114,19 @@ class PLRU : public Set<T> {
       };
       nodes.emplace(nodes.begin(),
                     std::make_shared<node<T>>(nodes[0].get(),
-                                              nodes[1].get()));  // root node
-    } else {  // only two blocks
+                                              nodes[1].get())); // root node
+    }
+    else
+    { // only two blocks
       Block<T> *ptrleft = &this->dll.blocks[0];
       Block<T> *ptrright = &this->dll.blocks[1];
       nodes.emplace(nodes.begin(),
                     std::make_shared<endNode<T>>(ptrleft, ptrright));
     };
-    nodes[0]->above = nullptr;                 // nothing is above root node
-    for (int i = (n_nodes - 1); i > 0; --i) {  // above nodes
-      int prev = (i - 1) / 2;                  // idx of prev node
+    nodes[0]->above = nullptr; // nothing is above root node
+    for (int i = (n_nodes - 1); i > 0; --i)
+    {                         // above nodes
+      int prev = (i - 1) / 2; // idx of prev node
       nodes[i]->above = nodes[prev].get();
     };
     // DEBUGGING
@@ -125,34 +144,41 @@ class PLRU : public Set<T> {
   // function members
   std::string name() { return "PLRU"; };
 
-  void hitPLRU(int tag, Block<T> *blkPtr) {
+  void hitPLRU(int tag, Block<T> *blkPtr)
+  {
     unsigned blkIdx = (unsigned)(this->hashMap[tag] - &this->dll.blocks[0]);
     unsigned nodeIdx = blkIdx / 2 + ((this->dll.size / 2) - 1);
     blkPtr = &this->dll.blocks[blkIdx];
     endNode<T> *eN = dynamic_cast<endNode<T> *>(nodes[nodeIdx].get());
-    eN->ascendEnd(blkPtr, nodes[nodeIdx].get());  // working upwards
+    eN->ascendEnd(blkPtr, nodes[nodeIdx].get()); // working upwards
     // pointers now point away from this block
   };
 
-  void missPLRU(int offset, int tag, T &ramData, Block<T> *blkPtr) {
+  void missPLRU(int offset, int tag, T &ramData, Block<T> *blkPtr)
+  {
     // start from root node and descend
     // during descent the switches are updated
-    blkPtr = nodes[0]->descend();  // this is the new block where data must go
-    blkPtr->reset();               // clear it and update hashmap
+    blkPtr = nodes[0]->descend(); // this is the new block where data must go
+    blkPtr->reset();              // clear it and update hashmap
     this->updateNewBlock(offset, tag, ramData, blkPtr);
   };
 
-  bool find(int offset, int tag, T &ramData) {  // processor requests memory
+  bool find(int offset, int tag, T &ramData)
+  { // processor requests memory
     bool hitFlag;
     Block<T> *blkPtr;
-    if (this->hit(this->hashMap[tag])) {  // CACHE HIT
-      hitFlag = true;                     // hit
-      if (this->dll.size != 1) {  // if direct mapping, you dont need to move
-                                  // anything, it stays where it is
-        blkPtr = this->hashMap[tag];  // set the working pointer
+    if (this->hit(this->hashMap[tag]))
+    {                 // CACHE HIT
+      hitFlag = true; // hit
+      if (this->dll.size != 1)
+      {                              // if direct mapping, you dont need to move
+                                     // anything, it stays where it is
+        blkPtr = this->hashMap[tag]; // set the working pointer
         hitPLRU(tag, blkPtr);
       }
-    } else {  // CACHE MISS
+    }
+    else
+    { // CACHE MISS
       hitFlag = false;
       missPLRU(offset, tag, ramData, blkPtr);
     }
