@@ -15,7 +15,8 @@ const extern std::string GLOBAL_CONFIG =
     "results/" + NOW + "/" + NOW + "_globalconfig.csv";
 const extern std::string TEMP_SORT_FILE = "sorttemp.txt";
 
-std::string timeNowString() {
+std::string timeNowString()
+{
   auto now = std::chrono::system_clock::now();
   std::time_t now_time = std::chrono::system_clock::to_time_t(now);
   tm t = *localtime(&now_time);
@@ -33,7 +34,8 @@ std::string timeNowString() {
   return out;
 };
 
-std::string unixTimeString() {
+std::string unixTimeString()
+{
   uint64_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::system_clock::now().time_since_epoch())
                     .count();
@@ -41,25 +43,31 @@ std::string unixTimeString() {
   return out;
 };
 
-void initGlobalConfig() {
+void initGlobalConfig()
+{
   std::string dir_results = "results/";
   std::string directoryout = dir_results + NOW;
   std::experimental::filesystem::path path_results{dir_results};
   std::experimental::filesystem::path out{directoryout};
-  if (!std::experimental::filesystem::exists(path_results)) {
+  if (!std::experimental::filesystem::exists(path_results))
+  {
     std::experimental::filesystem::create_directory(dir_results);
   };
-  if (!std::experimental::filesystem::exists(out)) {
+  if (!std::experimental::filesystem::exists(out))
+  {
     std::experimental::filesystem::create_directory(directoryout);
   };
   std::ofstream report(GLOBAL_CONFIG, std::ios_base::app);
   std::string input =
       "blockSize_bytes,cacheSize_bytes,ramSize_bytes,placementPolicy,"
       "replacementPolicy,program,hits,misses,hitRatio,filename,group\n";
-  if (report.is_open()) {
+  if (report.is_open())
+  {
     report << input;
     report.close();
-  } else {
+  }
+  else
+  {
     std::cout << "Unable to open file " << GLOBAL_CONFIG << std::endl;
   }
 };

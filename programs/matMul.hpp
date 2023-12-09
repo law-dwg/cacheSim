@@ -31,7 +31,8 @@ int matMulMain(CacheConfig<R, T> &config, int lhsX, int lhsY, int rhsX,
 // };
 template <typename R, typename T>
 void matMulWrapper(CacheConfig<R, T> &config, int lhsX, int lhsY, int rhsX,
-                   int rhsY) {
+                   int rhsY)
+{
   config.program = 0;
   config.programStr = config.programs[config.program];
   config.print();

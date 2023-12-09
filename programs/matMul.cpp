@@ -22,17 +22,22 @@ int matMulMain(C &config, int lhsX, int lhsY, int rhsX, int rhsY);
       1. All operations performed on one processor (core) with 64KiB (1024 cache
    lines) of L1d cache 2. */
 template <typename T>
-struct mat {
+struct mat
+{
   unsigned r;
   unsigned c;
   std::vector<T> m;
-  mat(unsigned rows, unsigned cols) : r(rows), c(cols) {
+  mat(unsigned rows, unsigned cols) : r(rows), c(cols)
+  {
     m.resize(rows * cols, 0);
   }
-  void print() {
+  void print()
+  {
     printf("(%dx%d)=\n[", r, c);
-    for (int e = 0; e < r * c; e++) {
-      if (e % c == 0) {
+    for (int e = 0; e < r * c; e++)
+    {
+      if (e % c == 0)
+      {
         (e == 0) ?: printf("\n ");
       };
       (e == r * c - 1) ? printf("%.3f", m[e]) : printf("%.3f ", m[e]);
@@ -43,7 +48,8 @@ struct mat {
 
 template <typename R, typename T>
 mat<T> matMul(CacheConfig<R, T> &config, mat<T> lhs, mat<T> rhs,
-              float &hitRatio) {
+              float &hitRatio)
+{
   int lhsCacheIdx, rhsCacheIdx;
   std::string lhsHitStr, rhsHitStr;
   typedef T data_t;
@@ -58,14 +64,18 @@ mat<T> matMul(CacheConfig<R, T> &config, mat<T> lhs, mat<T> rhs,
   // END REFERENCE
   CacheWrapper<replacementPolicy_t, data_t, std::vector<data_t>> L1(config);
 
-  auto lhsWrap = L1.allocate(lhs.r * lhs.c, lhs.m);  // datawrappers
-  auto rhsWrap = L1.allocate(rhs.r * rhs.c, rhs.m);  // datawrappers
+  auto lhsWrap = L1.allocate(lhs.r * lhs.c, lhs.m); // datawrappers
+  auto rhsWrap = L1.allocate(rhs.r * rhs.c, rhs.m); // datawrappers
 
-  if (lhs.c == rhs.r) {
-    for (int r = 0; r < lhs.r; r++) {
-      for (int c = 0; c < rhs.c; c++) {
+  if (lhs.c == rhs.r)
+  {
+    for (int r = 0; r < lhs.r; r++)
+    {
+      for (int c = 0; c < rhs.c; c++)
+      {
         float sum = 0;
-        for (int i = 0; i < rhs.r; i++) {
+        for (int i = 0; i < rhs.r; i++)
+        {
           // LHS matrix
           int lhsIdx = r * lhs.c + i;
           int lhsY = lhsIdx - (r * lhs.c);
@@ -90,8 +100,8 @@ mat<T> matMul(CacheConfig<R, T> &config, mat<T> lhs, mat<T> rhs,
           // END REFERENCE
 
           sum +=
-              lhsWrap[lhsIdx] * rhsWrap[rhsIdx];  // multiple reads, but assume
-                                                  // this is in the register
+              lhsWrap[lhsIdx] * rhsWrap[rhsIdx]; // multiple reads, but assume
+                                                 // this is in the register
           // printf("");
           // printf("lhs[%d][%d]=%.3f cache %s\nrhs[%d][%d]=%.3f cache %s\n",
           // lhsX, lhsY, lhs.m[lhsIdx], lhsHitStr.c_str(), rhsX, rhsY,
@@ -101,14 +111,16 @@ mat<T> matMul(CacheConfig<R, T> &config, mat<T> lhs, mat<T> rhs,
           // lhsHitStr.c_str(), rhsX, rhsY, rhsHitStr.c_str());
           // printf("---------------------------------------------------------------------------------\n");
         }
-        out.m[r * out.c + c] = sum;  // written to main memory
+        out.m[r * out.c + c] = sum; // written to main memory
       }
     }
     // printf("hitcount = %d, misscount = %d\n", L1.cache.hitCount,
     // L1.cache.missCount); hitRatio = (L1.cache.hitCount /
     // (float)(L1.cache.hitCount + L1.cache.missCount)); std::cout << "hit ratio
     // = " << hitRatio * 100 << "%\n" << std::endl;
-  } else {
+  }
+  else
+  {
     printf("Cannot perform multiplication, dimension mismatch %s(%d)\n",
            __FILE__, __LINE__);
     exit(1);
@@ -122,20 +134,23 @@ mat<T> matMul(CacheConfig<R, T> &config, mat<T> lhs, mat<T> rhs,
 //
 template <typename R, typename T>
 int matMulMain(CacheConfig<R, T> &config, int lhsX, int lhsY, int rhsX,
-               int rhsY) {
+               int rhsY)
+{
   float hitRatio;
   typedef T matType_t;
-  mat<matType_t> lhs(lhsX, lhsY);  // too small
-  mat<matType_t> rhs(rhsX, rhsY);  // too small
+  mat<matType_t> lhs(lhsX, lhsY); // too small
+  mat<matType_t> rhs(rhsX, rhsY); // too small
   std::random_device dev;
   std::mt19937 rng(dev());
   std::uniform_int_distribution<std::mt19937::result_type> dist6(
-      1, 25);  // distribution in range [1, 6]
-  for (int i = 0; i < rhs.r * rhs.c; ++i) {
+      1, 25); // distribution in range [1, 6]
+  for (int i = 0; i < rhs.r * rhs.c; ++i)
+  {
     rhs.m[i] = dist6(rng);
     // std::cout << &rhs.m[i] << std::endl;
   };
-  for (int i = 0; i < lhs.r * lhs.c; ++i) {
+  for (int i = 0; i < lhs.r * lhs.c; ++i)
+  {
     lhs.m[i] = dist6(rng);
     // std::cout << &lhs.m[i] << std::endl;
   };

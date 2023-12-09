@@ -1,8 +1,9 @@
 #pragma once
 #include "lru.hpp"
 template <typename T>
-class FIFO : public LRU<T> {
- public:
+class FIFO : public LRU<T>
+{
+public:
   // data members
 
   /** constructor **/
@@ -11,12 +12,16 @@ class FIFO : public LRU<T> {
   // function members
   std::string name() { return "FIFO"; };
 
-  bool find(int offset, int tag, T &ramData) {  // processor requests memory
+  bool find(int offset, int tag, T &ramData)
+  { // processor requests memory
     bool hitFlag;
     Block<T> *blkPtr;
-    if (this->hit(this->hashMap[tag])) {  // CACHE HIT
+    if (this->hit(this->hashMap[tag]))
+    { // CACHE HIT
       hitFlag = true;
-    } else {  // CACHE MISS
+    }
+    else
+    { // CACHE MISS
       hitFlag = false;
       this->missLRU(offset, tag, ramData, blkPtr);
     }

@@ -5,16 +5,18 @@
 #include "lru.hpp"
 
 template <typename T>
-class SLRU : public LRU<T> {
- public:
+class SLRU : public LRU<T>
+{
+public:
   // data members
   LRU<T> protectedLRU;
   std::stack<unsigned>
-      freeIdx;  // used to track the free indices in block vector
+      freeIdx; // used to track the free indices in block vector
 
   /** constructor **/
   SLRU(int sS, int *bS, int hMS)
-      : LRU<T>(sS / 2, bS, hMS), protectedLRU(sS / 2, bS, hMS) {
+      : LRU<T>(sS / 2, bS, hMS), protectedLRU(sS / 2, bS, hMS)
+  {
     if (sS % 2 != 0)
       throw std::runtime_error(
           "SLRU sets must be divisible by 2, please adjust");
@@ -28,62 +30,77 @@ class SLRU : public LRU<T> {
   std::string name() { return "SLRU"; };
 
   void hitSLRU(int offset, int tag, T &ramData,
-               Block<T> *blkPtr) {            // HIT IN PROBATIONAL
-    bool protFull = protectedLRU.dll.full;    // save for later if a block is
-                                              // being inserted into probational
-    protectedLRU.find(offset, tag, ramData);  // add it to protected
+               Block<T> *blkPtr)
+  {                                          // HIT IN PROBATIONAL
+    bool protFull = protectedLRU.dll.full;   // save for later if a block is
+                                             // being inserted into probational
+    protectedLRU.find(offset, tag, ramData); // add it to protected
 
-    this->dll.remove(blkPtr);  // evict from probational
+    this->dll.remove(blkPtr); // evict from probational
     freeIdx.push((unsigned)(this->hashMap[tag] -
-                            &this->dll.blocks[0]));  // add the free index after
-                                                     // eviction to stack
-    this->decrement();                               // reduce counter
-    blkPtr->reset();                                 // clear block & hashmap
+                            &this->dll.blocks[0])); // add the free index after
+                                                    // eviction to stack
+    this->decrement();                              // reduce counter
+    blkPtr->reset();                                // clear block & hashmap
 
-    if (protFull) {  // if a block was eliminated from protected (before new
-                     // block was added)
+    if (protFull)
+    { // if a block was eliminated from protected (before new
+      // block was added)
       int tempTag = (protectedLRU.lastEvicted.tag -
-                     &protectedLRU.hashMap[0]);  // find the tag in main mem of
-                                                 // block evicted from protected
+                     &protectedLRU.hashMap[0]); // find the tag in main mem of
+                                                // block evicted from protected
       double temp = 0;
       this->missSLRU(0, tempTag, temp,
-                     blkPtr);  // add to head of the not full prob
+                     blkPtr); // add to head of the not full prob
     }
   };
 
-  void missSLRU(int offset, int tag, T &ramData, Block<T> *blkPtr) {
-    if (!this->dll.full) {  // if prob not full
+  void missSLRU(int offset, int tag, T &ramData, Block<T> *blkPtr)
+  {
+    if (!this->dll.full)
+    { // if prob not full
       unsigned
-          tempIdx;  // we have to determine which index of dll vector to use
-      if (!freeIdx.empty()) {         // is the stack not empty
-        tempIdx = freeIdx.top();      // we use the free index at top of stack
-        freeIdx.pop();                // pop off top
-      } else {                        // if nothing in stack
-        tempIdx = this->dll.counter;  // use counter index
+          tempIdx; // we have to determine which index of dll vector to use
+      if (!freeIdx.empty())
+      {                          // is the stack not empty
+        tempIdx = freeIdx.top(); // we use the free index at top of stack
+        freeIdx.pop();           // pop off top
+      }
+      else
+      {                              // if nothing in stack
+        tempIdx = this->dll.counter; // use counter index
       };
-      blkPtr = &this->dll.blocks[tempIdx];  // new node
-      this->increment();                    // add to counter
-    } else {                                // if prob is full we use tail (LRU)
-      blkPtr = this->dll.tail;              // probational LRU
-      this->lastEvicted = *blkPtr;  // create copy of what was last evicted
-      this->dll.remove(blkPtr);     // remove from list
-      blkPtr->reset();              // clear block data & hashmap
+      blkPtr = &this->dll.blocks[tempIdx]; // new node
+      this->increment();                   // add to counter
     }
-    this->updateNewBlock(offset, tag, ramData, blkPtr);  // fill block with data
-    this->dll.insertBeginning(blkPtr);  // shift to head of prob
+    else
+    {                              // if prob is full we use tail (LRU)
+      blkPtr = this->dll.tail;     // probational LRU
+      this->lastEvicted = *blkPtr; // create copy of what was last evicted
+      this->dll.remove(blkPtr);    // remove from list
+      blkPtr->reset();             // clear block data & hashmap
+    }
+    this->updateNewBlock(offset, tag, ramData, blkPtr); // fill block with data
+    this->dll.insertBeginning(blkPtr);                  // shift to head of prob
   };
 
-  bool find(int offset, int tag, T &ramData) {  // processor requests memory
+  bool find(int offset, int tag, T &ramData)
+  { // processor requests memory
     bool hitFlag;
     Block<T> *blkPtr;
-    if (this->hit(this->hashMap[tag])) {  // HIT IN PROBATIONAL
+    if (this->hit(this->hashMap[tag]))
+    { // HIT IN PROBATIONAL
       hitFlag = true;
       blkPtr = this->hashMap[tag];
       hitSLRU(offset, tag, ramData, blkPtr);
-    } else if (protectedLRU.hit(
-                   protectedLRU.hashMap[tag])) {  // HIT IN PROTECTED
+    }
+    else if (protectedLRU.hit(
+                 protectedLRU.hashMap[tag]))
+    { // HIT IN PROTECTED
       hitFlag = protectedLRU.find(offset, tag, ramData);
-    } else {  // MISS
+    }
+    else
+    { // MISS
       hitFlag = false;
       this->missSLRU(offset, tag, ramData, blkPtr);
     };
@@ -109,11 +126,14 @@ class SLRU : public LRU<T> {
     // printf("prob lru %p\n", this->dll.tail);
     return hitFlag;
   };
-  virtual unsigned updateRam(int rS) override {
+  virtual unsigned updateRam(int rS) override
+  {
     unsigned increase = (rS / *this->blockSize) -
-                        this->hashMap.size();  // increase in hashmap size
-    if (increase > 0) {
-      for (int i = 0; i < increase; ++i) {
+                        this->hashMap.size(); // increase in hashmap size
+    if (increase > 0)
+    {
+      for (int i = 0; i < increase; ++i)
+      {
         this->hashMap.push_back(nullptr);
         protectedLRU.hashMap.push_back(nullptr);
         if ((protectedLRU.hashMap.size() != this->hashMap.size()))

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include <filesystem>
-//#include <experimental/filesystem>
+// #include <experimental/filesystem>
 #include <fstream>
 #include <random>
 #include <sstream>
@@ -14,13 +14,15 @@
 #include "utils.hpp"
 
 template <class Q>
-struct Logger {
+struct Logger
+{
   // data memebers
   Q &cache;
   std::string fileout_data;
   std::string fileout_config;
   /** constructor **/
-  Logger(Q &c) : cache(c) {
+  Logger(Q &c) : cache(c)
+  {
     /** Prepare report */
     std::ofstream report;
     std::stringstream reportName;
@@ -40,10 +42,12 @@ struct Logger {
     std::filesystem::path outData{directoryout_data};
     std::filesystem::file_status s = std::filesystem::file_status{};
 
-    if (!std::filesystem::exists(outData)) {
+    if (!std::filesystem::exists(outData))
+    {
       std::filesystem::create_directories(directoryout_data);
     };
-    if (!std::filesystem::exists(outConfig)) {
+    if (!std::filesystem::exists(outConfig))
+    {
       std::filesystem::create_directories(directoryout_config);
     };
 
@@ -54,21 +58,27 @@ struct Logger {
   };
 
   // operators
-  bool operator()(std::string s) {
+  bool operator()(std::string s)
+  {
     bool success = writeToCSV(fileout_data, s);
-    if (!success) throw std::runtime_error("cannot write to logfile");
+    if (!success)
+      throw std::runtime_error("cannot write to logfile");
     return success;
   };
 
   // function members
-  bool writeToCSV(std::string dest, std::string input) {
+  bool writeToCSV(std::string dest, std::string input)
+  {
     std::ofstream report(dest, std::ios_base::app);
     bool success = false;
-    if (report.is_open()) {
+    if (report.is_open())
+    {
       report << input;
       report.close();
       success = true;
-    } else {
+    }
+    else
+    {
       std::cout << "Unable to open file";
       success = false;
     }
@@ -76,12 +86,16 @@ struct Logger {
   };
   void demo_exists(
       const std::filesystem::path &p,
-      std::filesystem::file_status s = std::filesystem::file_status{}) {
+      std::filesystem::file_status s = std::filesystem::file_status{})
+  {
     bool out;
     if (std::filesystem::status_known(s) ? std::filesystem::exists(s)
-                                         : std::filesystem::exists(p)) {
+                                         : std::filesystem::exists(p))
+    {
       out = true;
-    } else {
+    }
+    else
+    {
       out = false;
     }
   };
