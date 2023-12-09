@@ -6,7 +6,7 @@
 #include <vector>
 
 // #include "../../../REF/cacheHitMiss/cache.h"
-#include "../cacheReplacementPolicies/cache.hpp"
+#include "../cache/cache.hpp"
 #include "../utils/wrappers.hpp"
 #ifndef MATMUL_HPP_
 #define MATMUL_HPP_

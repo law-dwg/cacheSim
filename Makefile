@@ -1,4 +1,5 @@
-TARGET := ayersThesisCpp
+TARGET := cache-replacement-simulator
+
 BUILD_DIR := ./build
 
 # Main
@@ -8,7 +9,8 @@ OBJ_MAIN := $(BUILD_DIR)/main.o
 # CPP code
 SRC_UTILS := ./utils
 SRC_PROGRAMS := ./programs
-SRC_CACHE_REPLACEMENT_POLICIES := ./cacheReplacementPolicies
+SRC_CACHE := ./cache
+SRC_CACHE_REPLACEMENT_POLICIES := ./policies
 CC = g++
 CC_FLAGS = -std=c++17
 CC_LINKER_FLAGS = -lstdc++fs
@@ -22,14 +24,14 @@ SOURCES_HPP = 	$(SRC_UTILS)/utils.hpp \
 				$(SRC_UTILS)/logger.hpp \
 				$(SRC_PROGRAMS)/sort.hpp \
 				$(SRC_PROGRAMS)/matMul.hpp \
-				$(SRC_CACHE_REPLACEMENT_POLICIES)/cache.hpp \
+				$(SRC_CACHE)/cache.hpp \
+				$(SRC_CACHE)/../cache/set.hpp \
 				$(SRC_CACHE_REPLACEMENT_POLICIES)/fifo.hpp \
 				$(SRC_CACHE_REPLACEMENT_POLICIES)/lfru.hpp \
 				$(SRC_CACHE_REPLACEMENT_POLICIES)/lfu.hpp \
 				$(SRC_CACHE_REPLACEMENT_POLICIES)/lru.hpp \
 				$(SRC_CACHE_REPLACEMENT_POLICIES)/mru.hpp \
 				$(SRC_CACHE_REPLACEMENT_POLICIES)/plru.hpp \
-				$(SRC_CACHE_REPLACEMENT_POLICIES)/set.hpp \
 				$(SRC_CACHE_REPLACEMENT_POLICIES)/slru.hpp
 
 # OBJS_CPP := $(SOURCES_CPP:%=$(BUILD_DIR)/%.o)

@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <thread>
 
-#include "cacheReplacementPolicies/cache.hpp"
+#include "cache/cache.hpp"
 #include "programs/matMul.hpp"
 #include "programs/sort.hpp"
 

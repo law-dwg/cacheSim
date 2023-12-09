@@ -13,12 +13,12 @@
 #include <vector>
 
 // Replacement policies
-#include "fifo.hpp"
-#include "lfu.hpp"
-#include "lru.hpp"
-#include "mru.hpp"
-#include "plru.hpp"
-#include "slru.hpp"
+#include "../policies/fifo.hpp"
+#include "../policies/lfu.hpp"
+#include "../policies/lru.hpp"
+#include "../policies/mru.hpp"
+#include "../policies/plru.hpp"
+#include "../policies/slru.hpp"
 
 template <typename R, typename T>
 struct CacheConfig

@@ -1,5 +1,5 @@
 #pragma once
-#include "../cacheReplacementPolicies/cache.hpp"
+#include "../cache/cache.hpp"
 #ifndef MATMUL_HPP_
 #define MATMUL_HPP_
 

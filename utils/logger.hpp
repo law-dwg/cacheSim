@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "../cacheReplacementPolicies/cache.hpp"
+#include "../cache/cache.hpp"
 #include "utils.hpp"
 
 template <class Q>

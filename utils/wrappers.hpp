@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "../cacheReplacementPolicies/cache.hpp"
+#include "../cache/cache.hpp"
 #include "logger.hpp"
 #include "utils.hpp"
 
